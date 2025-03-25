@@ -56,6 +56,15 @@ class Portfolio_Stats:
         """
         return r.std()*(periods_per_year**0.5)
 
+    def annualize_var(self,r, periods_per_year):
+        """
+        Annualizes the variance of a set of returns
+        We should infer the periods per year
+        but that is currently left as an exercise
+        to the reader :-)
+        """
+        return r.var()*(periods_per_year)
+
     def sharpe_ratio(self,r, riskfree_rate, periods_per_year):
         """
         Computes the annualized sharpe ratio of a set of returns
