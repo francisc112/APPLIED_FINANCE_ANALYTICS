@@ -64,6 +64,12 @@ class Portfolio_Stats:
         to the reader :-)
         """
         return r.var()*(periods_per_year)
+    def covariance_matrix(self,r):
+        """
+        Returns the covariance matrix of the given returns
+        
+        """
+        return r.cov()
 
     def sharpe_ratio(self,r, riskfree_rate, periods_per_year):
         """
