@@ -149,18 +149,20 @@ class Portfolio_Stats:
                     (2*z**3 - 5*z)*(s**2)/36
                 )
         return -(r.mean() + z*r.std(ddof=0))
-    
-    def cvar_historic(self,r, level=5):
+
+
+    def cvar_historic(self,r: pd.Series, alpha: float = 0.05) -> float:
         """
-        Computes the Conditional VaR of Series or DataFrame
+        Historical CVaR at level alpha (e.g. 0.05 = 5%).
+        Returns a positive number representing the average loss in the worst alpha fraction.
         """
-        if isinstance(r, pd.Series):
-            is_beyond = r <= - self.var_historic(r, level=level)
-            return -r[is_beyond].mean()
-        elif isinstance(r, pd.DataFrame):
-            return r.aggregate(self.cvar_historic, level=level)
-        else:
-            raise TypeError("Expected r to be a Series or DataFrame")
+        # 1. percentile: note returns could be positive/negative, so we use r.quantile()
+        var_level = r.quantile(alpha)
+        # 2. select the tail
+        tail_losses = r[r <= var_level]
+        # 3. average loss (as a positive number, we take -mean if r is returns)
+        return -tail_losses.mean()
+
 
 
     def summary_stats(self,r, riskfree_rate=0.03,periods_per_year = 252):
