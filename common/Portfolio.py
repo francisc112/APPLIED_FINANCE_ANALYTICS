@@ -96,6 +96,29 @@ class Portfolio_Stats:
                             "Previous Peak": previous_peaks, 
                             "Drawdown": drawdowns})
     
+    def drawdown_duration_from_returns(self,r: pd.Series, start_value: float = 1.0) -> pd.Series:
+        """
+        Given a returns Series `r` (e.g. daily returns in decimals) with a DatetimeIndex,
+        compute the time since the last all-time high.
+
+        Returns a Timedelta Series of the same index.
+        """
+        # 1. Build the wealth index: start at `start_value`, grow by (1 + r)
+        wealth = (1 + r).cumprod() * start_value
+
+        # 2. Compute running maximum of the wealth index
+        running_max = wealth.cummax()
+
+        # 3. Turn the index into a Series of timestamps
+        dates = wealth.index.to_series()
+
+        # 4. Identify new peaks (where wealth == running max), else NaT, then ffill
+        last_peak = dates.where(wealth == running_max).ffill()
+
+        # 5. Duration since last peak
+        return dates - last_peak
+
+    
     def semideviation(self,r):
         """
         Returns the semideviation aka negative semideviation of r
@@ -140,7 +163,7 @@ class Portfolio_Stats:
             raise TypeError("Expected r to be a Series or DataFrame")
 
 
-    def summary_stats(self,r, riskfree_rate=0.03,periods_per_year = 365):
+    def summary_stats(self,r, riskfree_rate=0.03,periods_per_year = 252):
         """
         Return a DataFrame that contains aggregated summary stats for the returns in the columns of r
         """
@@ -155,17 +178,16 @@ class Portfolio_Stats:
         cf_var5 = r.aggregate(self.var_gaussian, modified=True)
         hist_cvar5 = r.aggregate(self.cvar_historic)
         return pd.DataFrame({
-            "Annualized Return": ann_r,
-            "Annualized Vol": ann_vol,
-            "Annaulized Semideviation":ann_semideviation,
-            "Sharpe Ratio":sharpe_ratio,
-            "Skewness": skew,
-            "Kurtosis": kurt,
-            "Cornish-Fisher VaR (5%)": cf_var5,
-            "Historic CVaR (5%)": hist_cvar5,
-            "Sharpe Ratio": ann_sr,
-            "Max Drawdown": dd
-        })
+            "Annualized Return":       [ann_r],
+            "Annualized Vol":          [ann_vol],
+            "Annualized Semideviation": [ann_semideviation],
+            "Sharpe Ratio":            [ann_sr],
+            "Skewness":                [skew],
+            "Kurtosis":                [kurt],
+            "Cornish-Fisher VaR (5%)": [cf_var5],
+            "Historic CVaR (5%)":      [hist_cvar5],
+            "Max Drawdown":            [dd]
+        }, index=[r.name or ""])
 
     def var_historic(self,r, level=5):
         """
