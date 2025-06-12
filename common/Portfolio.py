@@ -116,7 +116,7 @@ class Portfolio_Stats:
         last_peak = dates.where(wealth == running_max).ffill()
 
         # 5. Duration since last peak
-        return dates - last_peak
+        return (dates - last_peak).max().days
 
     
     def semideviation(self,r):
@@ -179,6 +179,12 @@ class Portfolio_Stats:
         kurt = r.aggregate(self.kurtosis)
         cf_var5 = r.aggregate(self.var_gaussian, modified=True)
         hist_cvar5 = r.aggregate(self.cvar_historic)
+
+        drawdon_duration = r.aggregate(self.drawdown_duration_from_returns)
+
+
+
+
         return pd.DataFrame({
             "Annualized Return":       [ann_r],
             "Annualized Vol":          [ann_vol],
@@ -188,7 +194,8 @@ class Portfolio_Stats:
             "Kurtosis":                [kurt],
             "Cornish-Fisher VaR (5%)": [cf_var5],
             "Historic CVaR (5%)":      [hist_cvar5],
-            "Max Drawdown":            [dd]
+            "Max Drawdown":            [dd],
+            "Drawdown Duration (Days)":[drawdon_duration]
         }, index=[r.name or ""])
 
     def var_historic(self,r, level=5):
