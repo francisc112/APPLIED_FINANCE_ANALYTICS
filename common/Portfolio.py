@@ -170,6 +170,44 @@ class Portfolio_Stats:
         total_days = r.count()
 
         return up_days/total_days
+    
+
+    def ulcer_index(self,r:pd.Series) -> float:
+        """
+        Calculate the Ulcer Index from a series of daily price changes (returns).
+
+        Parameters
+        ----------
+        r : array-like or pandas.Series
+            Daily price changes in decimal form (e.g., 0.02 for +2%, -0.015 for -1.5%).
+
+        Returns
+        -------
+        float
+            The Ulcer Index: the root-mean-square of drawdown percentages
+            An Ulcer Index of 10 means that, over the period you measured, your portfolio spent its days on average about 10 % below its previous peaks (in an RMS sense).  More concretely:
+        •	Depth & Duration Combined
+        •	You experienced drawdowns that, when squared and averaged, produced a root-mean-square drawdown of 10 %.
+        •	In plain terms, you were “in the red” by roughly 10 % below your highs for a sustained amount of time.
+        •	Risk Interpretation
+        •	UI ≤ 5 %: very shallow or brief dips—low “pain.”
+        •	UI ≈ 5–10 %: moderate drawdowns—some volatility but generally controlled.
+        •	UI ≥ 15 %: deeper or more prolonged drawdowns—higher stress.
+        •	What to Watch
+        •	A UI of 10 % suggests you’re taking on moderate downside risk—not “safe‐as‐cash,” but not wildly volatile either.
+        •	Compare against benchmarks:
+        •	Historically, the S&P 500 often shows Ulcer Indexes in the 10–15 % range over rolling multi‐year windows.
+        •	A strategy with a UI significantly below 10 % but similar returns would be considered “smoother.”.
+        """
+        # build a wealth index (start at 1.0)
+        wealth = (1 + r).cumprod()
+        # running peak of the wealth index
+        running_max = wealth.cummax()
+        # drawdowns as percent below peak
+        drawdowns = (wealth - running_max) / running_max * 100
+        # square only the negative drawdowns, average, then sqrt
+        squared = drawdowns.clip(upper=0) ** 2
+        return np.sqrt(squared.mean())
 
 
 
@@ -192,6 +230,8 @@ class Portfolio_Stats:
 
         up_days_pct = r.aggregate(self.up_days)
 
+        ulcer_index = r.aggregate(self.ulcer_index)
+
 
 
 
@@ -206,7 +246,8 @@ class Portfolio_Stats:
             "Historic CVaR (5%)":      [hist_cvar5],
             "Max Drawdown":            [dd],
             "Drawdown Duration (Days)":[drawdon_duration],
-            "Up Days %":[up_days_pct]
+            "Up Days %":[up_days_pct],
+            "Ulcer index":[ulcer_index]
         }, index=[r.name or ""])
 
     def var_historic(self,r, level=5):
