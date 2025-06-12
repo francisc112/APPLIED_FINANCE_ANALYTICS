@@ -162,6 +162,14 @@ class Portfolio_Stats:
         tail_losses = r[r <= var_level]
         # 3. average loss (as a positive number, we take -mean if r is returns)
         return -tail_losses.mean()
+    
+    def up_days(self,r:pd.Series) -> float:
+
+        up_days = r[r>0].count()
+
+        total_days = r.count()
+
+        return up_days/total_days
 
 
 
@@ -182,6 +190,8 @@ class Portfolio_Stats:
 
         drawdon_duration = r.aggregate(self.drawdown_duration_from_returns)
 
+        up_days_pct = r.aggregate(self.up_days)
+
 
 
 
@@ -195,7 +205,8 @@ class Portfolio_Stats:
             "Cornish-Fisher VaR (5%)": [cf_var5],
             "Historic CVaR (5%)":      [hist_cvar5],
             "Max Drawdown":            [dd],
-            "Drawdown Duration (Days)":[drawdon_duration]
+            "Drawdown Duration (Days)":[drawdon_duration],
+            "Up Days %":[up_days_pct]
         }, index=[r.name or ""])
 
     def var_historic(self,r, level=5):
