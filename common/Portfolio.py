@@ -211,7 +211,7 @@ class Portfolio_Stats:
 
 
 
-    def summary_stats(self,r, riskfree_rate=0.03,periods_per_year = 252):
+    def summary_stats(self,r, riskfree_rate=0.03,periods_per_year = 252,market_index:pd.Series = None):
         """
         Return a DataFrame that contains aggregated summary stats for the returns in the columns of r
         """
@@ -236,6 +236,11 @@ class Portfolio_Stats:
 
         sortino_ratio = r.aggregate(self.sortino_ratio)
 
+        if market_index is not None:
+            beta = r.aggregate(self.calculate_beta,market_r=market_index)
+        else:
+            beta = None
+
 
 
 
@@ -253,8 +258,26 @@ class Portfolio_Stats:
             "Up Days %":[up_days_pct],
             "Ulcer index":[ulcer_index],
             "Calmar Ratio":[calmar_ratio],
-            "Sortino Ratio":[sortino_ratio]
+            "Sortino Ratio":[sortino_ratio],
+            "Beta":[np.round(beta,2)]
         }, index=[r.name or ""])
+    
+
+
+    def calculate_beta(self,r:pd.Series,market_r:pd.Series):
+        #Let's align the indices
+
+        df = pd.concat([r,market_r],axis=1).dropna()
+
+        df.columns = ['Asset','Market']
+
+        #Covariance Matrix and variance
+
+        cov = df["Asset"].cov(df["Market"])
+
+        var = df["Market"].var()
+
+        return cov/var
 
     def var_historic(self,r, level=5):
         """
