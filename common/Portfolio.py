@@ -232,6 +232,10 @@ class Portfolio_Stats:
 
         ulcer_index = r.aggregate(self.ulcer_index)
 
+        calmar_ratio = ann_r / dd
+
+        sortino_ratio = r.aggregate(self.sortino_ratio)
+
 
 
 
@@ -247,7 +251,9 @@ class Portfolio_Stats:
             "Max Drawdown":            [dd],
             "Drawdown Duration (Days)":[drawdon_duration],
             "Up Days %":[up_days_pct],
-            "Ulcer index":[ulcer_index]
+            "Ulcer index":[ulcer_index],
+            "Calmar Ratio":[calmar_ratio],
+            "Sortino Ratio":[sortino_ratio]
         }, index=[r.name or ""])
 
     def var_historic(self,r, level=5):
@@ -277,6 +283,31 @@ class Portfolio_Stats:
         weights are a numpy array or N x 1 maxtrix and covmat is an N x N matrix
         """
         return (weights.T @ covmat @ weights)**0.5
+    
+    def sortino_ratio(self,r:pd.Series, target:float = 0,periods_per_year:int = 252) -> float:
+        """
+        Calculate the Sortino Ratio for a series of returns.
+
+        Parameters:
+        - r: pd.Series of periodic returns (e.g., daily returns).
+        - target: The minimum acceptable return (MAR) per period (e.g., 0 for 0%).
+        - periods_per_year: Number of return periods in a year (e.g., 252 for daily returns).
+
+        Returns:
+        - Sortino Ratio (annualized).
+        """
+        downside_returns = r[r<target]
+
+        downside_deviation = np.sqrt(
+            (downside_returns**2).mean()
+        ) * np.sqrt(periods_per_year)
+
+        excess_returns = (r.mean()-target) * periods_per_year
+
+
+        return excess_returns/downside_deviation
+
+
     
     def semideviation(self,r):
         """
