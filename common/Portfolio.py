@@ -238,8 +238,10 @@ class Portfolio_Stats:
 
         if market_index is not None:
             beta = r.aggregate(self.calculate_beta,market_r=market_index)
+            corr = r.aggregate(self.calculate_correlation,market_r=market_index)
         else:
             beta = None
+            corr = None
 
 
 
@@ -259,7 +261,8 @@ class Portfolio_Stats:
             "Ulcer index":[ulcer_index],
             "Calmar Ratio":[calmar_ratio],
             "Sortino Ratio":[sortino_ratio],
-            "Beta":[np.round(beta,2)]
+            "Beta":[np.round(beta,2)],
+            "Correlation":[np.round(corr,2)]
         }, index=[r.name or ""])
     
 
@@ -278,6 +281,16 @@ class Portfolio_Stats:
         var = df["Market"].var()
 
         return cov/var
+    
+    def calculate_correlation(self,r:pd.Series, market_r:pd.Series) -> float:
+        
+        df = pd.concat([r,market_r],axis=1).dropna()
+
+        df.columns = ["Asset","Market"]
+
+        corr = df["Asset"].corr(df["Market"])
+
+        return corr
 
     def var_historic(self,r, level=5):
         """
