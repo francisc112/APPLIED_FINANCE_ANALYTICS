@@ -53,13 +53,13 @@ class Port_Connect(object):
                 
                     df.insert(0,'symbol',symbol)
                     
-                    df['date'] = pd.to_datetime(df['date'],infer_datetime_format=True)
+                    df['date'] = pd.to_datetime(df['date'])
                     
                     df.sort_values(by='date',ascending=True,inplace=True)
                     
                     df.set_index('date',inplace=True)
                     
-                    df.set_index = pd.to_datetime(df.index, infer_datetime_format=True)
+                    df.set_index = pd.to_datetime(df.index)
                     
                     return df
         
@@ -110,7 +110,7 @@ class Port_Connect(object):
 
                 historical_df.set_index('date',inplace=True)
 
-                historical_df.index = pd.to_datetime(historical_df.index, infer_datetime_format=True)
+                historical_df.index = pd.to_datetime(historical_df.index)
 
                 historical_df['change'] = historical_df['close'].pct_change()   
 
@@ -141,7 +141,7 @@ class Port_Connect(object):
 
     
 
-        historical_df['daily'] = pd.to_datetime(historical_df.index, infer_datetime_format=True)
+        historical_df['daily'] = pd.to_datetime(historical_df.index)
 
         # Retrieve Weekly, Monthly, Quarterly and Yearly Price Data
 
@@ -247,7 +247,7 @@ class Port_Connect(object):
             df = self.historical_closing_price(tickers,interval)
         
             closing_df = pd.pivot_table(data=df,index=df.index,columns='symbol',values='close',aggfunc='mean')
-            closing_df.index = pd.to_datetime(closing_df.index, infer_datetime_format=True)
+            closing_df.index = pd.to_datetime(closing_df.index)
 
         else:
         
@@ -260,7 +260,7 @@ class Port_Connect(object):
             x = pd.concat(dfs)
     
             closing_df = pd.pivot_table(data=x, index=x.index, columns='symbol',values='close',aggfunc='mean')
-            closing_df.index = pd.to_datetime(closing_df.index, infer_datetime_format=True)
+            closing_df.index = pd.to_datetime(closing_df.index)
 
         from_d = from_date if from_date != None else closing_df.index.min()
 
@@ -319,7 +319,7 @@ class Port_Connect(object):
     
         df = self._get_df(url)
     
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        df['date'] = pd.to_datetime(df['date'])
     
         df['ym'] = df['date'].astype('datetime64[M]')
     
@@ -330,7 +330,7 @@ class Port_Connect(object):
     
         df = self._get_df(url)
     
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        df['date'] = pd.to_datetime(df['date'])
     
         return df
 
@@ -340,7 +340,7 @@ class Port_Connect(object):
     
         df = self._get_df(url)
     
-        df['date'] = pd.to_datetime(df['date'],infer_datetime_format=True)
+        df['date'] = pd.to_datetime(df['date'])
     
         return df
 
@@ -350,9 +350,9 @@ class Port_Connect(object):
 
         df = self._get_df(url)
 
-        df['filingDate'] = pd.to_datetime(df['filingDate'], infer_datetime_format=True)
+        df['filingDate'] = pd.to_datetime(df['filingDate'])
 
-        df['transactionDate'] = pd.to_datetime(df['transactionDate'], infer_datetime_format=True)
+        df['transactionDate'] = pd.to_datetime(df['transactionDate'])
 
         df.set_index('filingDate',inplace=True)
 
@@ -373,9 +373,9 @@ class Port_Connect(object):
 
         df = self._get_df(url)
 
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        df['date'] = pd.to_datetime(df['date'])
 
-        df['fillingDate'] = pd.to_datetime(df['fillingDate'], infer_datetime_format=True)
+        df['fillingDate'] = pd.to_datetime(df['fillingDate'])
 
         df.set_index('date',inplace=True)
 
@@ -414,7 +414,7 @@ class Port_Connect(object):
 
         df.insert(3,'year_period',year_period)
 
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        df['date'] = pd.to_datetime(df['date'])
 
         df.sort_values(by='date',ascending=True,inplace=True)
 
@@ -431,7 +431,7 @@ class Port_Connect(object):
     
         df = self._get_df(url)
     
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        df['date'] = pd.to_datetime(df['date'])
 
         df['Year'] = df['date'].dt.year
         df['Month'] = df['date'].dt.month
@@ -451,7 +451,7 @@ class Port_Connect(object):
 
         df = self._get_df(url)
 
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        df['date'] = pd.to_datetime(df['date'])
 
         df.set_index('date',inplace=True)
 
@@ -486,7 +486,7 @@ class Port_Connect(object):
 
         df = self._get_df(url)
 
-        df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+        df['date'] = pd.to_datetime(df['date'])
 
         df.set_index('date',inplace=True)
 
