@@ -261,9 +261,9 @@ class Portfolio_Stats:
             "Ulcer index":[ulcer_index],
             "Calmar Ratio":[calmar_ratio],
             "Sortino Ratio":[sortino_ratio],
-            "Beta":[np.round(beta,2)],
-            "Correlation":[np.round(corr,2)]
-        }, index=[r.name or ""])
+            "Beta":[beta],
+            "Correlation":[corr]
+        })
     
 
 
