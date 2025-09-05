@@ -14,13 +14,20 @@ class Portfolio_Stats:
     def annualize_rets(self,r, periods_per_year):
         """
         Annualizes a set of returns
-        We should infer the periods per year
-        but that is currently left as an exercise
-        to the reader :-)
         """
         compounded_growth = (1+r).prod()
         n_periods = r.shape[0]
         return compounded_growth**(periods_per_year/n_periods)-1
+    
+    def cummulative_rets(self,r):
+        """
+        Returns cummulative return of a returns series
+        
+        """
+
+        return (1+r.fillna(0)).cumprod()
+
+
 
     def skewness(self,r):
         """
@@ -216,6 +223,9 @@ class Portfolio_Stats:
         Return a DataFrame that contains aggregated summary stats for the returns in the columns of r
         """
         ann_r = r.aggregate(self.annualize_rets, periods_per_year=periods_per_year)
+
+        cumm_r = r.aggregate(self.cummulative_rets)
+
         ann_vol = r.aggregate(self.annualize_vol, periods_per_year=periods_per_year)
         ann_semideviation = r.aggregate(self.semideviation) * (periods_per_year ** 0.5)
         sharpe_ratio = r.aggregate(self.sharpe_ratio,riskfree_rate=riskfree_rate,periods_per_year=periods_per_year)
@@ -236,6 +246,8 @@ class Portfolio_Stats:
 
         sortino_ratio = r.aggregate(self.sortino_ratio)
 
+
+
         if market_index is not None:
             beta = r.aggregate(self.calculate_beta,market_r=market_index)
             corr = r.aggregate(self.calculate_correlation,market_r=market_index)
@@ -247,6 +259,7 @@ class Portfolio_Stats:
 
 
         return pd.DataFrame({
+            "Cummulative Return":[cumm_r],
             "Annualized Return":       [ann_r],
             "Annualized Vol":          [ann_vol],
             "Annualized Semideviation": [ann_semideviation],
