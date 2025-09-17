@@ -617,7 +617,7 @@ class Port_Connect(object):
 
         return self._get_df(url)
     
-    def get_historical_dividends(self,ticker,from_date=None,to_date=None):
+    def get_historical_dividends(self,ticker,from_date=None,to_date=None,tax=0):
 
         url = f'https://financialmodelingprep.com/api/v3/historical-price-full/stock_dividend/{ticker}?apikey={self.get_apikey()}'
 
@@ -630,7 +630,31 @@ class Port_Connect(object):
 
             to_d = to_date if to_date != None else df.index.max()
 
-            return df[from_d:to_d]
+            df = df[from_d:to_d]
+            df['adjDividend'] = df['adjDividend'] * (1-tax)
+
+            return df
+    
+    def get_price_and_dividends(self,ticker,from_date=None,to_date=None,tax=0):
+
+        dividends = self.get_historical_dividends(ticker=ticker,from_date=from_date,to_date=to_date,tax=tax)
+        price = self.get_closing_prices(tickers=ticker,from_date=from_date,to_date=to_date)
+
+        df = pd.merge(price,dividends[["adjDividend"]],left_index=True,right_index=True,how='left').fillna(0)
+
+        return df
+
+
+        """
+        price_return = df[ticker].pct_change().fillna(0)
+
+        yield_return = (df['adjDividend'] / df[ticker].shift(1)).fillna(0)
+
+        total_return = price_return + yield_return 
+        
+        """
+
+
 
     
     def get_historical_etf_available_dates(self,ticker):

@@ -11,6 +11,18 @@ class Portfolio_Stats:
     def __init__(self):
         pass
 
+
+    def returns_with_dividends(self,prices,dividends):
+        """
+        
+        """
+
+        price_return = prices.pct_change().fillna(0)
+
+        yield_return = dividends / prices.shift(1).fillna(0)
+
+        return (price_return + yield_return).fillna(0)
+
     def annualize_rets(self,r, periods_per_year):
         """
         Annualizes a set of returns
