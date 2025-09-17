@@ -642,6 +642,8 @@ class Port_Connect(object):
 
         df = pd.merge(price,dividends[["adjDividend"]],left_index=True,right_index=True,how='left').fillna(0)
 
+        df.attrs['title'] = ticker
+
         return df
 
 

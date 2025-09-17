@@ -37,7 +37,7 @@ class Portfolio_Stats:
         
         """
 
-        return (1+r.fillna(0)).cumprod()
+        return (1+r).cumprod().iloc[-1]
 
 
 
