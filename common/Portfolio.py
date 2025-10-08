@@ -6,10 +6,21 @@ from scipy.stats import norm
 from scipy.optimize import minimize
 
 
+
+class Portfolio:
+
+    def __init__(self,df:pd.DataFrame):
+        self._df = df
+
+    def 
+
+
 class Portfolio_Stats:
 
     def __init__(self):
         pass
+
+    
 
 
     def returns_with_dividends(self,prices,dividends):
