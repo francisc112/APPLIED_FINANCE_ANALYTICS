@@ -12,8 +12,6 @@ class Portfolio:
     def __init__(self,df:pd.DataFrame):
         self._df = df
 
-    def 
-
 
 class Portfolio_Stats:
 
