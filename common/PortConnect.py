@@ -3,6 +3,8 @@ import requests
 import pandas as pd
 import numpy as np
 import time
+import certifi
+import json
 
 class Port_Connect(object):
     
@@ -22,51 +24,43 @@ class Port_Connect(object):
         new_df = pd.merge(first_df, second_df[cols_to_use], left_index=True, right_index=True, how=how)
 
         return new_df
-        
+
     def _get_df(self,url:str,is_historical:bool = False) -> pd.DataFrame:
-        
-        response = requests.get(url)
-        
-        if response.status_code == 200:
-            
-            if response.json() == {}:
-                print('Requested instrument is empty when retrieving data')
-                return None
-            
-            if is_historical == False:
-                
-                response_df = pd.DataFrame.from_dict(response.json())
 
-                if response_df.empty == True: 
-                    return None 
-                else: 
-                    return response_df
-                
-            else:
-                symbol = response.json()['symbol']
-                
-                df = pd.DataFrame.from_dict(response.json()['historical'])
-
-                if df.empty == True:
-                    return None
-                else:
-                
-                    df.insert(0,'symbol',symbol)
-                    
-                    df['date'] = pd.to_datetime(df['date'])
-                    
-                    df.sort_values(by='date',ascending=True,inplace=True)
-                    
-                    df.set_index('date',inplace=True)
-                    
-                    df.set_index = pd.to_datetime(df.index)
-                    
-                    return df
+        try:
+            # For Python 3.0 and later
+            from urllib.request import urlopen
+        except ImportError:
+            # Fall back to Python 2's urllib2
+            from urllib2 import urlopen
         
+        def get_jsonparsed_data(url):
+            response = urlopen(url,cafile=certifi.where())
+            data = response.read().decode("utf-8")
+            return json.loads(data)
+        
+        parsed_url = get_jsonparsed_data(url)
+
+        df = pd.DataFrame(parsed_url)
+
+        if is_historical == True:
+            
+            df["date"] = pd.to_datetime(df["date"])
+
+            df.sort_values(by='date',ascending=True,inplace=True)
+
+            df.set_index('date',inplace=True)
+
+            df.set_index = pd.to_datetime(df.index)
+
         else:
-            raise ConnectionError('Could not connect to FMP Api, this was the response: \n',response.json())
-            
+            if "symbol" in df.columns:
+                df.set_index('symbol',inplace=True)
+
+        return df
     
+
+
     def historical_price_by_interval(self,ticker:str,interval:str='1d') -> pd.DataFrame:
 
         """
