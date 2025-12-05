@@ -61,7 +61,7 @@ class Port_Connect(object):
     
 
 
-    def historical_price_by_interval(self,ticker:str,interval:str='1d') -> pd.DataFrame:
+    def historical_price_by_interval(self,ticker:str,include_vol:bool = False) -> pd.DataFrame:
 
         """
         Retrieve historical price data from various time granularities
@@ -74,124 +74,25 @@ class Port_Connect(object):
         
         api_key:str :
             your FMP API Key
-        
-        interval: {1min,5min,15min,30min,1hour,4hour,1d,1w,1m,1q,1y} :
-            The granularity of how often the price historical data must be retrieved
-             (Default value = '1d')
 
         Returns
         -------
 
-        pd.DataFrame
+        pd.DataFrame with daily price and volume data for the specified ticker
 
         """
 
-        url = None
-
-        # Retrieve Historical info from 1 min to 4 hours
-
-        if interval in ['4hour','1hour','30min','15min','5min','1min']:
-            url = f'https://financialmodelingprep.com/api/v3/historical-chart/{interval}/{ticker}?apikey={self._api_key}'
-
-            historical_df = self._get_df(url)
-            historical_df.insert(0,'symbol',ticker)
-
-            if 'close' and 'date' in list(historical_df.columns):
-
-            
-
-                historical_df.sort_values(by='date',ascending=True,inplace=True)
-
-                historical_df.set_index('date',inplace=True)
-
-                historical_df.index = pd.to_datetime(historical_df.index)
-
-                historical_df['change'] = historical_df['close'].pct_change()   
-
-                historical_df['realOpen'] = historical_df['close'].shift(1)         
-            
-
-            
-
-            return historical_df
-
-        # Retrieve Daily Info
-
-        elif interval == '1d':
-
-            url = f'https://financialmodelingprep.com/api/v3/historical-price-full/{ticker}?apikey={self._api_key}'
-
-            historical_df = self._get_df(url,True)
-
-            historical_df['change'] = historical_df['close'].pct_change()
-
-            historical_df['realOpen'] = historical_df['close'].shift(1)
-
-            return historical_df
-
-        url = f'https://financialmodelingprep.com/api/v3/historical-price-full/{ticker}?apikey={self._api_key}'
-
-        historical_df = self._get_df(url,True)
-
-    
-
-        historical_df['daily'] = pd.to_datetime(historical_df.index)
-
-        # Retrieve Weekly, Monthly, Quarterly and Yearly Price Data
-
-        if interval == '1w':
+        url = f"https://financialmodelingprep.com/stable/historical-price-eod/light?symbol={ticker}&apikey={self._api_key}"
         
-            historical_df['week'] = historical_df['daily'].dt.to_period('w').apply(lambda r: r.start_time)
+        df = self._get_df(url,is_historical=True)
 
-            df = historical_df.drop_duplicates(subset=['week'],keep='first')
-
-            df['change'] = df['close'].pct_change()
-
-            df['realOpen'] = df['close'].shift(1)
+        if include_vol == False:
+            df.drop("volume",axis=1,inplace=True)
 
 
-            return df
 
-        elif interval == '1m':
+        return df
 
-            historical_df['monthly'] = historical_df['daily'].astype('datetime64[M]')
-
-            df = historical_df.drop_duplicates(subset=['monthly'],keep='first')
-
-            df['change'] = df['close'].pct_change()
-
-            df['realOpen'] = df['close'].shift(1)
-
-            return df
-
-        elif interval == '1q':
-
-            historical_df['quarter'] = historical_df['daily'].dt.to_period('q')
-
-            df = historical_df.drop_duplicates(subset=['quarter'], keep='first')
-
-            df['change'] = df['close'].pct_change()
-
-            df['realOpen'] = df['close'].shift(1)
-
-            return df
-
-        elif interval == '1y':
-
-            historical_df['year'] = historical_df['daily'].dt.year
-
-            df = historical_df.drop_duplicates(subset=['year'],keep='first')
-
-            df['change'] = df['close'].pct_change()
-
-            df['realOpen'] = df['close'].shift(1)
-
-            return df
-    
-        else:
-
-            raise ValueError('unsupported interval for ',interval,'check your spelling')
-        
     def resample_prices(self,df:pd.DataFrame, frequency:str):
 
     
